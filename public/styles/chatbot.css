@@ -1,0 +1,29 @@
+/* public/styles/chatbot.css */
+.chatbot-widget {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  }
+  
+  .chatbot-widget .bg-gray-100 {
+    background-color: #f3f4f6;
+  }
+  
+  .chatbot-widget .bg-blue-100 {
+    background-color: #dbeafe;
+  }
+  
+  .chatbot-widget .bg-purple-100 {
+    background-color: #ede9fe;
+  }
+  
+  .chatbot-widget .bg-gray-200 {
+    background-color: #e5e7eb;
+  }
+  
+  .chatbot-widget input,
+  .chatbot-widget button {
+    font-size: 14px;
+  }
+  
+  .chatbot-widget button:hover {
+    opacity: 0.9;
+  }

@@ -1,0 +1,172 @@
+<!-- frontend/public/embed-snippet.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FlowBuilder Chatbot Embed</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root { --primary: #3b82f6; --secondary: #f59e0b; --background: #ffffff; --text: #1f2937; --text-secondary: #4b5563; --border: #e5e7eb; }
+    body { font-family: 'Inter', sans-serif; background: #f9fafb; color: var(--text); padding: 48px 24px; display: flex; justify-content: center; min-height: 100vh; }
+    .container { max-width: 960px; background: var(--background); padding: 40px; border-radius: 16px; box-shadow: 0 8px 24px rgba(0,0,0,0.1); }
+    h1 { font-size: 32px; font-weight: 700; margin-bottom: 16px; }
+    p { font-size: 16px; color: var(--text-secondary); margin-bottom: 32px; max-width: 600px; }
+    .code-container { background: #f3f4f6; border-radius: 12px; overflow: hidden; }
+    pre { padding: 24px; font-size: 14px; color: var(--text); white-space: pre-wrap; }
+    .code-header { background: #e5e7eb; padding: 12px 24px; display: flex; justify-content: space-between; border-bottom: 1px solid var(--border); }
+    .code-title { font-size: 14px; font-weight: 500; }
+    .action-buttons { display: flex; gap: 12px; }
+    .button { background: var(--primary); color: #fff; padding: 8px 16px; border-radius: 8px; border: none; cursor: pointer; font-size: 14px; display: flex; align-items: center; gap: 8px; }
+    .button:hover { background: #2563eb; }
+    .button.copied { background: #10b981; }
+    .instructions { background: #f0f9ff; padding: 24px; border-radius: 12px; margin-top: 32px; }
+    .instructions h2 { font-size: 20px; font-weight: 600; margin-bottom: 16px; }
+    .instructions ul { list-style: disc; padding-left: 24px; font-size: 14px; color: var(--text-secondary); }
+    .instructions li { margin-bottom: 8px; }
+    .instructions code { background: #e5e7eb; padding: 2px 6px; border-radius: 4px; }
+    @media (max-width: 640px) {
+      body { padding: 24px 16px; }
+      .container { padding: 24px; }
+      h1 { font-size: 24px; }
+      pre { font-size: 13px; padding: 16px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Embed Your FlowBuilder Chatbot</h1>
+    <p>Paste this JavaScript snippet before the closing <code>&lt;/body&gt;</code> tag in your HTML.</p>
+    <div class="code-container">
+      <div class="code-header">
+        <span class="code-title">JavaScript Snippet</span>
+        <div class="action-buttons">
+          <button class="button preview-button" onclick="previewChatbot()">Preview</button>
+          <button class="button copy-button" onclick="copyCode()">Copy</button>
+        </div>
+      </div>
+      <pre id="code-snippet">
+&lt;script&gt;
+  (function () {
+    const config = {
+      flowId: "YOUR_FLOW_ID",
+      userId: "YOUR_USER_ID",
+      apiUrl: "http://localhost:5000/api",
+      apiKey: "YOUR_API_KEY",
+      theme: {
+        primary: "#3b82f6",
+        secondary: "#f59e0b",
+        background: "#ffffff",
+        text: "#1f2937",
+        font: "'Inter', sans-serif"
+      }
+    };
+    console.log("Loading FlowBuilderChatbot:", config);
+    const container = document.createElement("div");
+    container.id = "flowbuilder-chatbot";
+    Object.assign(container.style, {
+      position: "fixed",
+      bottom: "20px",
+      right: "20px",
+      zIndex: "1000",
+      width: "360px",
+      height: "48px",
+      borderRadius: "12px",
+      boxShadow: "0 4px 12px rgba(0,0,0,0.1)"
+    });
+    document.body.appendChild(container);
+    const script = document.createElement("script");
+    script.src = \`\${config.apiUrl}/widget/widget.js\`;
+    script.async = true;
+    script.onload = () => {
+      console.log("Widget script loaded");
+      if (window.FlowBuilderChatbot?.init) {
+        window.FlowBuilderChatbot.init({
+          containerId: "flowbuilder-chatbot",
+          flowId: config.flowId,
+          userId: config.userId,
+          apiUrl: config.apiUrl,
+          apiKey: config.apiKey,
+          theme: config.theme
+        });
+      } else {
+        console.error("FlowBuilderChatbot not defined");
+      }
+    };
+    script.onerror = () => {
+      console.error("Failed to load widget script");
+      container.innerHTML = "&lt;p style='padding:10px'&gt;Failed to load chatbot.&lt;/p&gt;";
+    };
+    document.body.appendChild(script);
+  })();
+&lt;/script&gt;
+      </pre>
+    </div>
+    <div class="instructions">
+      <h2>How to Embed</h2>
+      <ul>
+        <li>Replace <code>YOUR_FLOW_ID</code>, <code>YOUR_USER_ID</code>, and <code>YOUR_API_KEY</code> with your FlowBuilder values.</li>
+        <li>Paste before the closing <code>&lt;/body&gt;</code> tag.</li>
+      </ul>
+    </div>
+  </div>
+  <script>
+    function copyCode() {
+      const raw = document.getElementById("code-snippet").textContent.trim();
+      navigator.clipboard.writeText(raw).then(() => {
+        const button = document.querySelector(".copy-button");
+        button.classList.add("copied");
+        button.textContent = "Copied!";
+        setTimeout(() => {
+          button.classList.remove("copied");
+          button.textContent = "Copy";
+        }, 2000);
+      }).catch(() => alert("Failed to copy code."));
+    }
+    function previewChatbot() {
+      console.log("Previewing JavaScript chatbot");
+      const config = {
+        flowId: "demo-flow",
+        userId: "demo-user",
+        apiUrl: "http://localhost:5000/api",
+        apiKey: "YOUR_API_KEY",
+        theme: { primary: "#3b82f6", secondary: "#f59e0b", background: "#ffffff", text: "#1f2937", font: "'Inter', sans-serif" }
+      };
+      const container = document.createElement("div");
+      container.id = "flowbuilder-chatbot";
+      Object.assign(container.style, {
+        position: "fixed",
+        bottom: "20px",
+        right: "20px",
+        zIndex: "1000",
+        width: "360px",
+        height: "48px",
+        borderRadius: "12px",
+        boxShadow: "0 4px 12px rgba(0,0,0,0.1)"
+      });
+      document.body.appendChild(container);
+      const script = document.createElement("script");
+      script.src = `${config.apiUrl}/widget/widget.js`;
+      script.async = true;
+      script.onload = () => {
+        console.log("Widget script loaded for preview");
+        if (window.FlowBuilderChatbot?.init) {
+          window.FlowBuilderChatbot.init({
+            containerId: "flowbuilder-chatbot",
+            flowId: config.flowId,
+            userId: config.userId,
+            apiUrl: config.apiUrl,
+            apiKey: config.apiKey,
+            theme: config.theme
+          });
+        }
+      };
+      script.onerror = () => {
+        console.error("Failed to load widget script");
+        container.innerHTML = '<p style="padding:10px">Failed to load chatbot.</p>';
+      };
+      document.body.appendChild(script);
+    }
+  </script>
+</body>
+</html>
