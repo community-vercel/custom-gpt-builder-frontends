@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Test Chatbot</title>
+</head>
+<body>
+  <div id="chatbot-container" style="width: 400px; height: 600px;"></div>
+  <script src="http://localhost:5000/api/chatbot/script.js"></script>
+  <script>
+    window.ChatbotConfig = {
+      flowId: "682c7e24b707fc071614dfbe",
+      userId: "118348517020939070586",
+      position: "bottom-right",
+      theme: {
+        primary: "#3b82f6",
+        secondary: "#f59e0b",
+        background: "#ffffff",
+        text: "#111827"
+      }
+    };
+    window.initChatbot();
+  </script>
+</body>
+</html>

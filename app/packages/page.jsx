@@ -165,22 +165,7 @@ export default function PackagesPage() {
           allow="clipboard-write"
         ></iframe> */}
     
-        <iframe
-src="http://localhost:3000/widget/118348517020939070586/682c7e24b707fc071614dfbe"
 
-  style={{
-    width: "360px",
-    height: "480px",
-    border: "none",
-    position: "fixed",
-    bottom: "20px",
-    right: "20px",
-    zIndex: 1000,
-    borderRadius: "12px",
-    boxShadow: "0 4px 12px rgba(0,0,0,0.1)"
-  }}
-  title="FlowBuilder Chatbot"
-/>
 
 
 
@@ -197,7 +182,20 @@ src="http://localhost:3000/widget/118348517020939070586/682c7e24b707fc071614dfbe
             <p className="font-medium">{error}</p>
           </motion.div>
         )}
-
+   <iframe
+      src="http://localhost:5000/api/chatbot/682c7e24b707fc071614dfbe/118348517020939070586"
+      style={{
+        width: '400px',
+        height: '600px',
+        border: 'none',
+        position: 'fixed',
+        bottom: '20px',
+        right: '20px',
+      }}
+      allowTransparency="true"
+      title="Chatbot"
+    >
+      </iframe>
         {/* Packages Grid */}
         <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3 max-w-6xl mx-auto">
           {packages.map((pkg, index) => (
@@ -274,7 +272,7 @@ src="http://localhost:3000/widget/118348517020939070586/682c7e24b707fc071614dfbe
             </motion.div>
           ))}
         </div>
-
+    
         {/* Payment Button & Guarantee */}
         {selectedPackage && (
           <motion.div

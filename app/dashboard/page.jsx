@@ -52,7 +52,7 @@ export default function DashboardPage() {
   return (
     <div className="  py-0 px-0 sm:px-6">
       {/* Header */}
-  
+   
       {/* Main Content */}
       <div className="max-w-8xl mx-auto mt-16 backdrop-blur-lg bg-white/80 rounded-3xl shadow-2xl p-8 sm:p-10 border border-white/50">
         {/* Welcome Section */}

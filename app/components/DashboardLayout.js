@@ -39,10 +39,8 @@ export default function DashboardLayout({ children }) {
   const { data: session, status } = useSession();
   const pathname = usePathname();
   const isLoginPage = pathname === "/login";
-  const ischatbotembed=pathname==='/widget';
 const isChatbotPage = pathname===('/chatbot') 
 
-const isChatbotPage2 = pathname===('/$http') || pathname==="$http:"
 
 
 // Check if the current page is a chatbot page
@@ -71,9 +69,7 @@ const isChatbotPage2 = pathname===('/$http') || pathname==="$http:"
     isChatbotPage ) {
     return <AppProviders>{children}</AppProviders>;
   }
-  if (ischatbotembed || isChatbotPage2) {
-    return {children};
-  }
+ 
   const toggleSidebar = () => {
     setSidebarOpen(!sidebarOpen);
   };

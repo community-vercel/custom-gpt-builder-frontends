@@ -30,29 +30,40 @@ const handleApiError = (error) => {
 // Async thunks
 export const saveFlow = createAsyncThunk(
   'flow/saveFlow',
-  async ({ userId, nodes, edges, flowName }, { rejectWithValue }) => {
+  async ({ userId, nodes, edges, flowName, websiteDomain }, { rejectWithValue }) => {
     try {
       const response = await axios.post(`http://localhost:5000/api/flow/${userId}`, {
         nodes,
         edges,
-        flowName: flowName || `Flow-${Date.now()}`
+        flowName: flowName || `Flow-${Date.now()}`,
+        websiteDomain
       });
       return response.data;
     } catch (error) {
       const errorInfo = handleApiError(error);
       if (errorInfo.message.includes('duplicate key')) {
-        return rejectWithValue('Flow name already exists. Please choose a different name.');
+        return rejectWithValue('A flow already exists for this website domain or flow name.');
       }
       return rejectWithValue(errorInfo.message);
     }
   }
 );
-
 export const loadFlows = createAsyncThunk(
   'flow/loadFlows',
   async (userId, { rejectWithValue }) => {
     try {
       const response = await axios.get(`http://localhost:5000/api/flow/${userId}`);
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(handleApiError(error).message);
+    }
+  }
+);
+export const loadFlows2 = createAsyncThunk(
+  'flow/loadFlows',
+  async (userId, { rejectWithValue }) => {
+    try {
+      const response = await axios.get(`http://localhost:5000/api/flow/user/${userId}`);
       return response.data;
     } catch (error) {
       return rejectWithValue(handleApiError(error).message);
@@ -80,14 +91,14 @@ export const loadFlow = createAsyncThunk(
     }
   }
 );
-
 export const updateFlow = createAsyncThunk(
   'flow/updateFlow',
-  async ({ userId, flowId, nodes, edges }, { rejectWithValue }) => {
+  async ({ userId, flowId, nodes, edges, websiteDomain }, { rejectWithValue }) => {
     try {
       const response = await axios.put(`http://localhost:5000/api/flow/${userId}/${flowId}`, {
         nodes,
-        edges
+        edges,
+        websiteDomain
       });
       return response.data;
     } catch (error) {
@@ -107,6 +118,7 @@ export const deleteFlow = createAsyncThunk(
     }
   }
 );
+
 
 const flowBuilderSlice = createSlice({
   name: 'flowBuilder',
@@ -146,6 +158,9 @@ const flowBuilderSlice = createSlice({
     },
     resetFlowState: () => initialState
   },
+     setWebsiteDomain: (state, action) => {
+      state.websiteDomain = action.payload;
+    },
   extraReducers: (builder) => {
     builder
       .addCase(saveFlow.pending, (state) => {
@@ -167,15 +182,15 @@ const flowBuilderSlice = createSlice({
         state.status = 'failed';
         state.error = action.payload;
       })
-      .addCase(loadFlows.pending, (state) => {
+      .addCase(loadFlows2.pending, (state) => {
         state.status = 'loading';
         state.error = null;
       })
-      .addCase(loadFlows.fulfilled, (state, action) => {
+      .addCase(loadFlows2.fulfilled, (state, action) => {
         state.status = 'succeeded';
         state.flows = action.payload;
       })
-      .addCase(loadFlows.rejected, (state, action) => {
+      .addCase(loadFlows2.rejected, (state, action) => {
         state.status = 'failed';
         state.error = action.payload;
       })
@@ -188,6 +203,10 @@ const flowBuilderSlice = createSlice({
         state.nodes = action.payload.nodes || [];
         state.edges = action.payload.edges || [];
         state.currentFlowId = action.payload._id;
+                state.flowName = action.payload.flowName; // Load websiteDomain
+
+                state.websiteDomain = action.payload.websiteDomain; // Load websiteDomain
+
       })
       .addCase(loadFlow.rejected, (state, action) => {
         state.status = 'failed';
@@ -208,6 +227,8 @@ const flowBuilderSlice = createSlice({
         if (state.currentFlowId === action.payload._id) {
           state.nodes = action.payload.nodes || [];
           state.edges = action.payload.edges || [];
+                    state.websiteDomain = action.payload.websiteDomain; // Update websiteDomain
+
         }
       })
       .addCase(updateFlow.rejected, (state, action) => {
@@ -241,7 +262,8 @@ export const {
   addNode,
   clearFlow,
   setCurrentFlow,
-  resetFlowState
+  resetFlowState,
+    setWebsiteDomain
 } = flowBuilderSlice.actions;
 
 export default flowBuilderSlice.reducer;

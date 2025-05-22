@@ -17,7 +17,7 @@ import {
   FiCheck,
 } from 'react-icons/fi';
 import { motion, AnimatePresence } from 'framer-motion';
-import { loadFlows, deleteFlow, setCurrentFlow } from '../../store/flowBuilderSlice';
+import { loadFlows, deleteFlow, setCurrentFlow, loadFlows2 } from '../../store/flowBuilderSlice';
 import Link from 'next/link';
 
 import FlowCard from '../components/Flowcard';
@@ -40,7 +40,7 @@ export default function FlowsPage() {
 console.log("flows",flows)
   useEffect(() => {
     if (session?.user?.id) {
-      dispatch(loadFlows(session.user.id));
+      dispatch(loadFlows2(session.user.id));
     }
   }, [session?.user?.id, dispatch]);
 

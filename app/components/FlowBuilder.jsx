@@ -19,7 +19,7 @@ import  SingleInputFormNode from './SingleInputNode';
 import SingleInputApi from './SingleAPi';
 import 'reactflow/dist/style.css';
 import { useDispatch, useSelector } from 'react-redux';
-import {     setNodes  as setStoreNodes, updateNode, addNode, clearFlow } from '../../store/flowBuilderSlice';
+import {     setNodes  as setStoreNodes, updateNode, addNode, clearFlow, setWebsiteDomain } from '../../store/flowBuilderSlice';
 import { applyNodeChanges } from 'reactflow';
 import { useReactFlow } from 'reactflow';
 import { AiFillAliwangwang } from "react-icons/ai";
@@ -40,7 +40,8 @@ import {
   FiMoon,
   FiDroplet,
   FiSend,
-  FiSettings
+  FiSettings,
+  FiCode
 } from 'react-icons/fi';
 import { BsBoxes, BsPalette } from 'react-icons/bs';
 import ChatbotPreview from './ChatbotPreview';
@@ -51,6 +52,7 @@ import { fetchSmtpConfig } from '../../store/smtpSlice';
 import { FiFolder, FiPlus } from 'react-icons/fi';
 import FlowSelector from './FlowSelector';
 import EmbedWidget from './EmbedWidget';
+import { FaInfo } from 'react-icons/fa';
 
 // Add this state
 
@@ -121,6 +123,9 @@ export default function FlowBuilder() {
       redirect("/login");
     },
   });
+    const [websiteDomain, setWebsiteDomainInput] = useState(''); // New state for website domain
+  const [domainError, setDomainError] = useState(''); // New state for domain validation
+
   const [currentTheme, setCurrentTheme] = useState('light');
   const [showThemePicker, setShowThemePicker] = useState(false);
   const { project } = useReactFlow();
@@ -128,7 +133,7 @@ export default function FlowBuilder() {
   const [showModal, setShowModal] = useState(false);
   const [smtpDetails, setSmtpDetails] = useState(null);
   const savedConfig = useSelector((state) => state.apiConfig.config || {});
-  const [flowName, setFlowName] = useState('New Flow');
+  const [flowName, setFlowName] = useState('');
   const [showFlowSelector, setShowFlowSelector] = useState(false);
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
 const [edges, setEdges, onEdgesChange] = useEdgesState([]);
@@ -138,7 +143,8 @@ const router = useRouter();
   const flowId = searchParams.get('flow'); // ✅ works with App Router
   const [showEmbedModal, setShowEmbedModal] = useState(false);
 
-
+console.log("weeee",flowState.websiteDomain)
+console.log("Flowname",flowState.flowName)
   useEffect(() => {
     if (session?.user?.id && flowId) {
       dispatch(loadFlow({ userId: session.user.id, flowId }));
@@ -164,8 +170,15 @@ useEffect(() => {
     }));
     setEdges(formattedEdges);
   }
-}, [flowState.nodes, flowState.edges]);
- 
+  setFlowName(flowState.flowName || '');
+      setWebsiteDomainInput(flowState.websiteDomain || ''); // Update websiteDomain
+
+}, [flowState.nodes, flowState.edges, flowState.websiteDomain,flowState.flowName]);
+ const validateDomain = (domain) => {
+    const domainRegex = /^(https?:\/\/)?([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}$/;
+    return domainRegex.test(domain);
+  };
+
   useEffect(() => {
     if (nodes.length > 0 && edges.length > 0) {
       const validEdges = edges.filter(edge => {
@@ -180,46 +193,66 @@ useEffect(() => {
       }
     }
   }, [nodes, edges]);
-  const handleSaveFlows = async () => {
-    if (session?.user?.id) {
-      try {
-        let result;
-        if (flowState.currentFlowId) {
-          result = await dispatch(updateFlow({
-            userId: session.user.id,
-            flowId: flowState.currentFlowId,
-            nodes,
-            edges
-          })).unwrap();
-        } else {
-          result = await dispatch(saveFlow({
-            userId: session.user.id,
-            nodes,
-            edges,
-            flowName: flowName || `My Flow ${new Date().toLocaleString()}`
-          })).unwrap();
-        }
-        
-        alert(`Flow "${result.name}" saved successfully!`);
-        setFlowName(result.name);
-      } catch (error) {
-        console.log("error",error)
-        if (error.includes('duplicate key')) {
-          setFlowName(prev => `${prev}-${Date.now()}`);
-          alert('Flow name already exists. Appended timestamp to make it unique.');
-        } else {
-          alert(`Failed to save flow: ${error}`);
-        }
-      }
-    } else {
+const handleSaveFlows = async () => {
+    if (!session?.user?.id) {
       alert('User not authenticated');
+      return;
     }
-  };                                 
-  
-  // Add new flow handler
+
+    // Validate inputs
+    if (!flowName.trim()) {
+      setNameError('Flow name is required');
+      return;
+    }
+    if (!websiteDomain.trim()) {
+      setDomainError('Website domain is required');
+      return;
+    }
+    if (!validateDomain(websiteDomain)) {
+      setDomainError('Invalid website domain');
+      return;
+    }
+
+    setNameError('');
+    setDomainError('');
+
+    try {
+      let result;
+      if (flowState.currentFlowId || flowId) {
+        result = await dispatch(updateFlow({
+          userId: session.user.id,
+          flowId: flowId,
+          nodes,
+          edges,
+          websiteDomain
+        })).unwrap();
+      } else {
+        result = await dispatch(saveFlow({
+          userId: session.user.id,
+          nodes,
+          edges,
+          flowName: flowName || `My Flow ${new Date().toLocaleString()}`,
+          websiteDomain
+        })).unwrap();
+      }
+      
+      alert(`Flow "${result.name}" saved successfully!`);
+      setFlowName(result.name);
+      dispatch(setWebsiteDomain(websiteDomain));
+    } catch (error) {
+      console.error("Error saving flow:", error);
+      if (error.includes('duplicate key') || error.includes('already exists')) {
+        setDomainError('A flow already exists for this website domain.');
+      } else {
+        alert(`Failed to save flow: ${error}`);
+      }
+    }
+  };
+
   const handleNewFlow = () => {
     dispatch(clearFlow());
     setFlowName('New Flow');
+    setWebsiteDomainInput('');
   };
   
   // Add load flow handler
@@ -786,30 +819,98 @@ useEffect(() => {
           deleteKeyCode={['Backspace', 'Delete']}
         >
           
-          <Panel position="top-right" className="space-x-2 flex items-center">
- 
-  <input
-    type="text"
-    value={flowName}
-    onChange={(e) => setFlowName(e.target.value)}
-    className="px-3 py-2 border rounded-lg"
-    style={{
-      backgroundColor: 'var(--background)',
-      color: 'var(--text)',
-      borderColor: 'var(--border)'
-    }}
-    placeholder="Flow name"
-  />
-  
-  <button 
-    onClick={handleSaveFlows}
-    className="px-4 py-2 text-white rounded-lg shadow-md hover:shadow-lg transition-all duration-300 flex items-center gap-2 transform hover:-translate-y-0.5"
-    style={{ 
-      background: `linear-gradient(to right, ${theme.colors.primary}, ${theme.colors.secondary})`
-    }}
-  >
-    <FiSave /> {flowState.currentFlowId ? 'Update' : 'Save'} Flow
-  </button>
+     
+<Panel
+  position="top-right"
+  className="flex items-center justify-between gap-4 p-4 bg-[var(--sidebar)] rounded-xl shadow-lg backdrop-blur-sm border border-[var(--border)]"
+>
+  <div className="flex items-start gap-4 flex-1">
+    {/* Flow Name Input */}
+    <div className="w-full max-w-xs relative">
+      <input
+        type="text"
+        value={flowName}
+        onChange={(e) => setFlowName(e.target.value)}
+        className={`w-full px-4 py-2.5 rounded-lg border transition-all duration-300 focus:ring-2 focus:ring-[var(--primary)] focus:border-transparent text-sm font-medium placeholder-gray-400 ${
+          nameError ? 'border-[var(--danger)]' : 'border-[var(--border)]'
+        }`}
+        style={{
+          backgroundColor: 'var(--background)',
+          color: 'var(--text)',
+        }}
+        placeholder="Flow name"
+      />
+      {nameError && (
+        <p className="absolute mt-1 text-xs font-medium text-[var(--danger)]">
+          {nameError}
+        </p>
+      )}
+    </div>
+
+    {/* Domain Input */}
+    <div className="w-full max-w-sm relative">
+      <input
+        type="text"
+        value={websiteDomain}
+        onChange={(e) => setWebsiteDomainInput(e.target.value)}
+        className={`w-full px-4 py-2.5 rounded-lg border transition-all duration-300 focus:ring-2 focus:ring-[var(--primary)] focus:border-transparent text-sm font-medium placeholder-gray-400 ${
+          domainError ? 'border-[var(--danger)]' : 'border-[var(--border)]'
+        }`}
+        style={{
+          backgroundColor: 'var(--background)',
+          color: 'var(--text)',
+        }}
+        placeholder="Website domain (e.g., example.com)"
+      />
+      {domainError && (
+        <p className="absolute mt-1 text-xs font-medium text-[var(--danger)]">
+          {domainError}
+        </p>
+      )}
+    </div>
+  </div>
+
+  {/* Action Buttons: Save + Embed */}
+  <div className="flex items-center gap-3 shrink-0">
+    {/* Save Button */}
+    <button
+      onClick={handleSaveFlows}
+      className="px-5 py-2.5 text-white rounded-lg font-semibold text-sm shadow-md hover:shadow-xl transition-all duration-300 flex items-center gap-2 transform hover:-translate-y-0.5 bg-gradient-to-r from-[var(--primary)] to-[var(--secondary)]"
+      disabled={flowState.status === 'saving' || flowState.status === 'updating'}
+    >
+      <FiSave className="w-4 h-4" />
+      {flowState.status === 'saving' || flowState.status === 'updating'
+        ? 'Saving...'
+        : flowState.currentFlowId || flowId
+        ? 'Update Flow'
+        : 'Save Flow'}
+    </button>
+
+    {/* Embed Button */}
+   <div className="flex items-center gap-3">
+  {/* Embed Button (Only shows if nodes and domain are ready) */}
+  {nodes?.length > 0 && flowState.websiteDomain ? (
+    <button
+      onClick={() => setShowEmbedModal(true)}
+      className="px-5 py-2.5 text-white rounded-lg font-semibold text-sm shadow-md hover:shadow-xl transition-all duration-300 flex items-center gap-2 transform hover:-translate-y-0.5 bg-gradient-to-r from-blue-600 to-purple-600"
+    >
+      <FiCode className="w-4 h-4" />
+      Embed Chatbot
+    </button>
+  ) : (
+    // Info icon when conditions not met
+    <div className="group relative flex items-center justify-center">
+      <FaInfo
+        className="text-gray-400 w-5 h-5 cursor-not-allowed"
+        title="You can embed your chatbot after saving."
+      />
+      <div className="absolute -top-10 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs px-3 py-1 rounded-md shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10">
+        You can embed your chatbot after saving.
+      </div>
+    </div>
+  )}
+</div>
+  </div>
 </Panel>
 
 
@@ -843,39 +944,32 @@ useEffect(() => {
             className="opacity-30"
           />
         </ReactFlow>
-      </div>      <ChatbotPreview nodes={nodes} edges={edges} />
 
-      <Panel position="top-left">
-      <button
-        onClick={() => setShowEmbedModal(true)}
-        className="px-4 py-2 bg-blue-500 text-white rounded-lg"
-      >
-        Embed Chatbot
-      </button>
-    </Panel>
-    {showEmbedModal && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div
-              className="bg-[var(--sidebar)] p-6 rounded-lg shadow-lg w-1/2 max-w-2xl"
-              style={{ border: `1px solid ${theme.colors.border}` }}
-            >
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-bold">Embed Your Chatbot</h2>
-                <button
-                  onClick={() => setShowEmbedModal(false)}
-                  className="text-[var(--text)] hover:text-[var(--danger)]"
-                >
-                  ✕
-                </button>
-              </div>
-              <EmbedWidget
-                nodes={nodes}
-                edges={edges}
-                flowId={flowId}
-              />
-            </div>
-          </div>
-        )}
+
+      </div> 
+  
+      
+           <ChatbotPreview nodes={nodes} edges={edges} />
+ 
+{showEmbedModal && (
+  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div
+      className="bg-[var(--sidebar)] p-6 rounded-lg shadow-lg w-1/2 max-w-2xl"
+      style={{ border: `1px solid ${theme.colors.border}` }}
+    >
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-xl font-bold">Embed Your Chatbot</h2>
+        <button
+          onClick={() => setShowEmbedModal(false)}
+          className="text-[var(--text)] hover:text-[var(--danger)]"
+        >
+          ✕
+        </button>
+      </div>
+      <EmbedWidget nodes={nodes} edges={edges} flowId={flowId}  websiteDomain={websiteDomain} />
+    </div>
+  </div>
+)}
   
       {/* Preview Sidebar */}
       <div 

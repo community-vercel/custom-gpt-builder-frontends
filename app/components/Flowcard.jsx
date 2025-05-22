@@ -13,6 +13,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 
 const FlowCard = ({ flow, onDelete, userId }) => {
+
+    console.log("flow",flow)
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     const [showMenu, setShowMenu] = useState(false);
     const handleDelete = async () => {
@@ -118,7 +120,7 @@ const FlowCard = ({ flow, onDelete, userId }) => {
                 {/* Action Buttons */}
                 <div className="flex space-x-3">
                     <Link
-                        href={`/builder?flow=${flow._id}`}
+                        href={`/chatbot?flow=${flow._id}`}
                         className="flex-1 flex items-center justify-center px-4 py-2.5 text-white bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg shadow-sm hover:from-blue-700 hover:to-indigo-700 transition-all duration-300 group/edit"
                     >
                         <motion.span
