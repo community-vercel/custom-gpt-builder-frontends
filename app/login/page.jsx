@@ -1,39 +1,56 @@
-"use client";
-import { signIn } from "next-auth/react";
-import { useState,useEffect } from "react";
-import { useRouter } from "next/navigation";
-import Link from "next/link";
-import { FaEnvelope, FaLock, FaGoogle } from "react-icons/fa";
-import { useSession } from "next-auth/react";
-import { redirect } from "next/navigation";
+// app/login/page.js
+'use client';
+import { signIn } from 'next-auth/react';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { FaEnvelope, FaLock, FaGoogle } from 'react-icons/fa';
+import { useSession } from 'next-auth/react';
+import { useDispatch } from 'react-redux';
+import { setCredentials } from '../../store/authSlice';
+
 export default function LoginPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
+  const dispatch = useDispatch();
 
-  useEffect(() => {
-    if (session && status === "authenticated") {
-      router.push("/dashboard");
-    }
-  }, [status, router]);
-
-
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
 
+  useEffect(() => {
+    if (session && status === 'authenticated') {
+      dispatch(
+        setCredentials({
+          token: session.user.token,
+          user: {
+            id: session.user.id,
+            name: session.user.name,
+            email: session.user.email,
+            role: session.user.role,
+            active: session.user.active,
+          },
+        })
+      );
+      router.push('/dashboard');
+    }
+  }, [status, session, router, dispatch]);
+
   const handleLogin = async () => {
     setIsLoading(true);
-    const res = await signIn("credentials", {
+    const res = await signIn('credentials', {
       email,
       password,
       redirect: false,
     });
 
     if (res?.ok) {
-      router.push("/dashboard");
+      
+      // Token is handled by useEffect via session
+      router.push('/dashboard');
     } else {
-      alert(res?.error || "Invalid email or password");
+      alert(res?.error || 'Invalid email or password');
     }
     setIsLoading(false);
   };
@@ -41,13 +58,9 @@ export default function LoginPage() {
   const handleGoogleLogin = async () => {
     setGoogleLoading(true);
     try {
-      const res = await signIn("google", { callbackUrl: "/dashboard" });
-      console.log(res);
-      if (res?.error) {
-        alert(res.error);
-      }
+      await signIn('google', { callbackUrl: '/dashboard' });
     } catch (error) {
-      alert("Failed to login with Google");
+      alert('Failed to login with Google');
     }
     setGoogleLoading(false);
   };
@@ -90,7 +103,7 @@ export default function LoginPage() {
             {isLoading ? (
               <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-white"></div>
             ) : (
-              "Login"
+              'Login'
             )}
           </button>
 
@@ -117,7 +130,7 @@ export default function LoginPage() {
         </div>
 
         <p className="text-center text-gray-600 mt-6 animate-fade-in">
-          Don&apos;t have an account?{" "}
+          Don't have an account?{' '}
           <Link
             href="/signup"
             className="text-blue-600 font-semibold hover:underline transition"
@@ -127,4 +140,5 @@ export default function LoginPage() {
         </p>
       </div>
     </div>
-  );}
+  );
+}

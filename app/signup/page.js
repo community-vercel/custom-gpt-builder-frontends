@@ -11,28 +11,29 @@ export default function SignupPage() {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
-  const handleSignup = async () => {
-    setIsLoading(true);
-    try {
-      const res = await fetch("http://localhost:5000/api/auth/signup", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, password }),
-      });
+ const handleSignup = async () => {
+  setIsLoading(true);
+  try {
+    const res = await fetch("http://localhost:5000/api/auth/register", { // Changed /signup to /register
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name, email, password }),
+    });
 
-      const data = await res.json();
-      if (res.ok) {
-        alert("Signup successful! Please login.");
-        router.push("/login");
-      } else {
-        alert(data.error || "Signup failed");
-      }
-    } catch (error) {
-      alert("An error occurred during signup");
-    } finally {
-      setIsLoading(false);
+    const data = await res.json();
+    if (res.ok) {
+      alert("Signup successful! Please login.");
+      router.push("/login");
+    } else {
+      alert(data.message || "Signup failed"); // Use data.message for better error reporting
     }
-  };
+  } catch (error) {
+    console.error("Signup error:", error);
+    alert("An error occurred during signup: " + error.message);
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-blue-100 px-4">

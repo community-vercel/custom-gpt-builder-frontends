@@ -23,12 +23,7 @@ import Link from 'next/link';
 import FlowCard from '../components/Flowcard';
 
 export default function FlowsPage() {
-  const { data: session, status } = useSession({
-    required: true,
-    onUnauthenticated() {
-      redirect('/login');
-    },
-  });
+  const { data: session, status } = useSession();
 
   const dispatch = useDispatch();
   const flows = useSelector((state) => state.flowBuilder.flows);
@@ -37,7 +32,6 @@ export default function FlowsPage() {
   const [filter, setFilter] = useState('all');
   const [sortOption, setSortOption] = useState('recent');
   const [showSortOptions, setShowSortOptions] = useState(false);
-console.log("flows",flows)
   useEffect(() => {
     if (session?.user?.id) {
       dispatch(loadFlows2(session.user.id));

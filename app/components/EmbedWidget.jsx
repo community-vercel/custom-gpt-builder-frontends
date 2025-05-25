@@ -70,7 +70,7 @@ const EmbedWidget = ({ nodes, edges, flowId, websiteDomain }) => {
   const generateIframeCode = () => {
     return `
       <iframe
-        src="http://localhost:5000/api/chatbot/${flowId || 'your-flow-id'}/${session?.user?.id || 'your-user-id'}?domain=${encodeURIComponent(websiteDomain || 'your-website.com')}"
+        src="http://localhost:5000/api/chatbot/${flowId}/${session?.user?.id}?domain=${encodeURIComponent(websiteDomain)}"
         style="width: 400px; height: 600px; border: none; position: fixed; ${position.replace('-', ': ')}: 20px;"
         allowtransparency="true"
       ></iframe>

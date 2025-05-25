@@ -19,10 +19,7 @@ import Link from "next/link";
 
 export default function DashboardPage() {
   const { data: session, status } = useSession({
-    required: true,
-    onUnauthenticated() {
-      redirect("/login");
-    },
+   
   });
 
   const [activeTab, setActiveTab] = useState('overview');

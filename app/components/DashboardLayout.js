@@ -27,7 +27,8 @@ import { useSession } from "next-auth/react";
 import { signOut } from "next-auth/react";
 import { AppProviders } from '../providers';
 import { motion, AnimatePresence } from 'framer-motion';
-
+import { useDispatch } from 'react-redux';
+import { clearCredentials } from '../../store/authSlice';
 export default function DashboardLayout({ children }) {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
@@ -35,7 +36,8 @@ export default function DashboardLayout({ children }) {
   const [activeHover, setActiveHover] = useState(null);
   const [isMobile, setIsMobile] = useState(false);
   const [unreadNotifications, setUnreadNotifications] = useState(3);
- 
+   const dispatch = useDispatch();
+
   const { data: session, status } = useSession();
   const pathname = usePathname();
   const isLoginPage = pathname === "/login";
@@ -81,7 +83,7 @@ const isChatbotPage = pathname===('/chatbot')
   const navItems = [
     { name: 'Dashboard', icon: <FiHome />, path: '/dashboard' },
     { name: 'Flows', icon: <FiZap />, path: '/flows' },
-    { name: 'Chatbot', icon: <FiMessageSquare />, path: '/chatbots' },
+    { name: 'Chatbot', icon: <FiMessageSquare />, path: '/chatbot' },
     { name: 'Templates', icon: <FiFolder />, path: '/templates' },
     { name: 'Integrations', icon: <FiGlobe />, path: '/integrations' },
     { name: 'Analytics', icon: <FiBarChart2 />, path: '/analytics' },
@@ -90,6 +92,8 @@ const isChatbotPage = pathname===('/chatbot')
   ];
 
   const handleLogout = async () => {
+            dispatch(clearCredentials());
+    
     await signOut({ callbackUrl: "/login" });
   };
 

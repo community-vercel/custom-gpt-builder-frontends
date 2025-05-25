@@ -6,6 +6,8 @@ const initialState = {
   edges: [],
   flows: [],
   currentFlowId: null,
+    websiteDomain: '', // Add this if missing
+
   status: 'idle',
   error: null
 };
@@ -155,12 +157,13 @@ const flowBuilderSlice = createSlice({
     },
     setCurrentFlow: (state, action) => {
       state.currentFlowId = action.payload;
-    },
-    resetFlowState: () => initialState
-  },
-     setWebsiteDomain: (state, action) => {
+    }, setWebsiteDomain: (state, action) => {
       state.websiteDomain = action.payload;
     },
+    resetFlowState: () => initialState
+    
+  },
+     
   extraReducers: (builder) => {
     builder
       .addCase(saveFlow.pending, (state) => {
@@ -204,6 +207,8 @@ const flowBuilderSlice = createSlice({
         state.edges = action.payload.edges || [];
         state.currentFlowId = action.payload._id;
                 state.flowName = action.payload.flowName; // Load websiteDomain
+        state.currentFlowId = action.payload._id;
+      state.status = 'idle';
 
                 state.websiteDomain = action.payload.websiteDomain; // Load websiteDomain
 
@@ -227,6 +232,8 @@ const flowBuilderSlice = createSlice({
         if (state.currentFlowId === action.payload._id) {
           state.nodes = action.payload.nodes || [];
           state.edges = action.payload.edges || [];
+                  state.currentFlowId = action.payload._id;
+
                     state.websiteDomain = action.payload.websiteDomain; // Update websiteDomain
 
         }
@@ -263,7 +270,7 @@ export const {
   clearFlow,
   setCurrentFlow,
   resetFlowState,
-    setWebsiteDomain
+  setWebsiteDomain
 } = flowBuilderSlice.actions;
 
 export default flowBuilderSlice.reducer;

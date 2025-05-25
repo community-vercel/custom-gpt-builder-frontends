@@ -20,10 +20,10 @@ const ApiConfigModal = ({ isOpen, onClose, apiConfig, onSave }) => {
 
   console.log("savedConfig",savedConfig)
   const { data: session, status } = useSession({
-    required: true,
-    onUnauthenticated() {
-      redirect("/login");
-    }
+    // required: true,
+    // onUnauthenticated() {
+    //   redirect("/login");
+    // }
   });
 
 

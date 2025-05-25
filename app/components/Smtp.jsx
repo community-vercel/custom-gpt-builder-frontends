@@ -17,9 +17,9 @@ export default function SmtpModal({ isOpen, onClose, onSave }) {
   });
  const { data: session, status } = useSession({
     required: true,
-    onUnauthenticated() {
-      redirect("/login");
-    }
+    // onUnauthenticated() {
+    //   redirect("/login");
+    // }
   });
   const [loading, setLoading] = useState(false);
   const [testStatus, setTestStatus] = useState(null);

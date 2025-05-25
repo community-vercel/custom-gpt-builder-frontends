@@ -3,11 +3,16 @@ import { signOut } from "next-auth/react";
 import { useState } from "react";
 import { FaSignOutAlt } from "react-icons/fa";
 
+import { useDispatch } from 'react-redux';
+import { clearCredentials } from '../../store/authSlice';
 export default function LogoutButton() {
   const [loading, setLoading] = useState(false);
+  const dispatch = useDispatch();
 
   const handleLogout = async () => {
     setLoading(true);
+        dispatch(clearCredentials());
+
     await signOut({ callbackUrl: "/login" });
   };
 

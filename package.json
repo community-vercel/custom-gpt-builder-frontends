@@ -9,7 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@reduxjs/toolkit": "^2.7.0",
+    "@reduxjs/toolkit": "^2.8.2",
     "@stripe/stripe-js": "^7.3.0",
     "@xyflow/react": "^12.6.0",
     "axios": "^1.9.0",
