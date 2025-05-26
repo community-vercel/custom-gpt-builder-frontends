@@ -62,7 +62,7 @@ export const loadFlows = createAsyncThunk(
   }
 );
 export const loadFlows2 = createAsyncThunk(
-  'flow/loadFlows',
+  'flow/loadFlows2',
   async (userId, { rejectWithValue }) => {
     try {
       const response = await axios.get(`http://localhost:5000/api/flow/user/${userId}`);
@@ -270,6 +270,7 @@ export const {
   clearFlow,
   setCurrentFlow,
   resetFlowState,
+  
   setWebsiteDomain
 } = flowBuilderSlice.actions;
 

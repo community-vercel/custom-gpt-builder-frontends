@@ -36,6 +36,10 @@ export const authOptions = {
             throw new Error(data.message || 'Invalid email or password');
           }
 
+          if (!data.user.isVerified) {
+            throw new Error('Please verify your email before logging in');
+          }
+
           if (data.user && data.token) {
             return {
               id: data.user.id,
@@ -43,6 +47,7 @@ export const authOptions = {
               email: data.user.email,
               role: data.user.role,
               active: data.user.active,
+              isVerified: data.user.isVerified,
               token: data.token,
             };
           }
@@ -57,58 +62,63 @@ export const authOptions = {
   ],
   callbacks: {
     async signIn({ user, account }) {
-  if (account.provider === 'google') {
-    try {
-      // Check if user exists
-      const checkRes = await fetch('http://localhost:5000/api/auth/check-user', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: user.email }),
-      });
+      if (account.provider === 'google') {
+        try {
+          // Check if user exists
+          const checkRes = await fetch('http://localhost:5000/api/auth/check-user', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: user.email }),
+          });
 
-      const checkData = await checkRes.json();
+          const checkData = await checkRes.json();
 
-      if (checkRes.ok && checkData.user) {
-        user.id = checkData.user.id;
-        user.token = checkData.token;
-        user.role = checkData.user.role;
-        user.active = checkData.user.active;
-      } else {
-        // Register new Google user
-        const registerRes = await fetch('http://localhost:5000/api/auth/register', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            email: user.email,
-            name: user.name,
-            googleId: account.providerAccountId,
-            image: user.image,
-            provider: 'google',
-          }),
-        });
+          if (checkRes.ok && checkData.user) {
+            if (!checkData.user.isVerified) {
+              // If user exists but isn't verified, deny sign-in
+              throw new Error('Please verify your email before logging in');
+            }
+            user.id = checkData.user.id;
+            user.token = checkData.token;
+            user.role = checkData.user.role;
+            user.active = checkData.user.active;
+            user.isVerified = checkData.user.isVerified;
+          } else {
+            // Register new Google user and trigger verification email
+            const registerRes = await fetch('http://localhost:5000/api/auth/register', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                email: user.email,
+                name: user.name,
+                googleId: account.providerAccountId,
+                image: user.image,
+                provider: 'google',
+              }),
+            });
 
-        const registerData = await registerRes.json();
-        if (!registerRes.ok) {
-          throw new Error(registerData.message || 'Failed to register Google user');
+            const registerData = await registerRes.json();
+            if (!registerRes.ok) {
+              throw new Error(registerData.message || 'Failed to register Google user');
+            }
+
+            // Since new users are unverified, deny sign-in and prompt verification
+            throw new Error('Account created! Please check your email to verify your account.');
+          }
+        } catch (error) {
+          console.error('Google sign-in error:', error);
+          return `/login?error=${encodeURIComponent(error.message)}`;
         }
-        user.id = registerData.user.id; // Fixed from _id to id
-        user.token = registerData.token;
-        user.role = registerData.user.role;
-        user.active = registerData.user.active;
       }
-    } catch (error) {
-      console.error('Google sign-in error:', error);
-      return false;
-    }
-  }
-  return true;
-},
+      return true;
+    },
     async jwt({ token, user }) {
       if (user) {
         token.accessToken = user.token;
         token.id = user.id;
         token.role = user.role;
         token.active = user.active;
+        token.isVerified = user.isVerified;
       }
       return token;
     },
@@ -117,6 +127,7 @@ export const authOptions = {
       session.user.token = token.accessToken;
       session.user.role = token.role;
       session.user.active = token.active;
+      session.user.isVerified = token.isVerified;
       return session;
     },
   },

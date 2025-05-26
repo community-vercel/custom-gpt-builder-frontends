@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useCallback, useState } from 'react';
+import React, { Suspense, useCallback, useState } from 'react';
 import ReactFlow, {
     addEdge,
     Background,
@@ -15,7 +15,9 @@ import FlowBuilder from "../components/FlowBuilder";
 export default function ChatbotFlowPage() {
   return (
     <ReactFlowProvider>
+      <Suspense fallback={<div>Loading...</div>}>
       <FlowBuilder />
+      </Suspense>
     </ReactFlowProvider>
   );
 }

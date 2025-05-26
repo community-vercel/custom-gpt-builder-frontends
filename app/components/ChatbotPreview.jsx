@@ -11,26 +11,19 @@ const ChatbotPreview = ({ nodes, edges, embedded = false, theme = 'light' }) => 
   const [inputValues, setInputValues] = useState({});
   const [aiResponses, setAiResponses] = useState({});
 
-
   const handleAiSubmit = async (nodeId, value) => {
     if (!value.trim()) return;
     
-    // Add user message
     addUserMessage(value);
     setInputValues(prev => ({ ...prev, [nodeId]: value }));
 
-    // Find the AI node
     const aiNode = nodes.find(n => n.id === nodeId);
     if (!aiNode) return;
 
     try {
-      // Simulate AI response (in real app, this would come from node's onSubmit)
       const aiResponse = `Simulated AI response to: "${value}"`;
-      
-      // Store the response
       setAiResponses(prev => ({ ...prev, [nodeId]: aiResponse }));
       
-      // Add AI response message
       addBotMessage({
         type: 'ai',
         content: aiResponse,
@@ -38,14 +31,12 @@ const ChatbotPreview = ({ nodes, edges, embedded = false, theme = 'light' }) => 
         timestamp: new Date().toLocaleTimeString()
       });
 
-      // Proceed to next node
       proceedToNextNode(nodeId, { input: value, response: aiResponse });
     } catch (error) {
       addSystemMessage(`AI error: ${error.message}`);
     }
   };
 
-  // Reset conversation when flow changes
   useEffect(() => {
     resetConversation();
   }, [nodes, edges]);
@@ -56,7 +47,7 @@ const ChatbotPreview = ({ nodes, edges, embedded = false, theme = 'light' }) => 
     setFormData({});
     setCurrentPath([]);
     setInputValues({});
-setAiResponses({});
+    setAiResponses({});
     startConversation();
   };
 
@@ -86,7 +77,6 @@ setAiResponses({});
       case 'form':
       case 'singleInput':
       case 'aiinput':
-
         break;
       case 'condition':
         processCondition(node);
@@ -118,14 +108,8 @@ setAiResponses({});
         options: field.type === 'select' ? (field.options || []) : undefined
       }));
     }
-    // if (node.type === 'aiinput') {
-    //   message.inputConfig = {
-    //     placeholder: node.data.placeholder || 'Type your answer...',
-    //     buttonText: node.data.buttonText || 'Send'
 
-    //   };
-    // }
-    if (node.type === 'singleInput') {
+    if (node.type === 'singleInput' || node.type === 'aiinput') {
       message.inputConfig = {
         placeholder: node.data.placeholder || 'Type your answer...',
         buttonText: node.data.buttonText || 'Send'
@@ -170,7 +154,6 @@ setAiResponses({});
     addUserMessage("Form submitted");
     proceedToNextNode(nodeId, data);
   };
-  
 
   const handleSingleInputSubmit = (nodeId, value) => {
     if (!value.trim()) return;
@@ -179,7 +162,6 @@ setAiResponses({});
     addUserMessage(value);
     proceedToNextNode(nodeId, value);
   };
-// In your ChatbotPreview component
 
   const proceedToNextNode = (nodeId, data) => {
     const edge = edges.find(e => e.source === nodeId);
@@ -220,67 +202,81 @@ setAiResponses({});
       'form': 'Please fill out this form:',
       'singleInput': 'Please answer:',
       'aiinput': 'Please answer:',
-
       'default': 'Message'
     };
     return messages[nodeType] || messages.default;
   };
 
   return (
-    <div className="w-3/7 p-5 border-l overflow-y-auto transition-colors duration-300"
-         style={{ backgroundColor: 'var(--background)', borderColor: 'var(--border)', color: 'var(--text)' }}>
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-xl font-bold">Chatbot Preview</h2>
+    <div className={`w-full max-w-md mx-auto p-6 rounded-2xl shadow-lg transition-all duration-300 ${
+      theme === 'dark' ? 'bg-gray-900 text-white' : 'bg-white text-gray-900'
+    }`}>
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-2xl font-semibold tracking-tight">Chatbot</h2>
         <button 
           onClick={resetConversation}
-          className="text-sm px-3 py-1 bg-blue-500 text-white rounded flex items-center gap-1"
+          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200"
         >
-          <FiRefreshCw size={14} /> Restart
+          <FiRefreshCw size={16} /> Restart
         </button>
       </div>
-      
-      <div className="bg-white p-4 rounded shadow" style={{ minHeight: '200px' }}>
-        <div className="mb-4 pb-2 border-b" style={{ borderColor: 'var(--border)' }}>
-          <div className="font-bold">Chatbot</div>
-          <div className="text-xs text-gray-500">Today at {new Date().toLocaleTimeString()}</div>
+
+      <div className="relative bg-gray-50 dark:bg-gray-800 p-6 rounded-xl shadow-inner min-h-[400px] max-h-[600px] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600">
+        <div className="sticky top-0 bg-gray-50 dark:bg-gray-800 pb-4 border-b border-gray-200 dark:border-gray-700 z-10">
+          <div className="font-medium text-sm">Chatbot</div>
+          <div className="text-xs text-gray-500 dark:text-gray-400">
+            Today at {new Date().toLocaleTimeString()}
+          </div>
         </div>
-        
-        <div className="space-y-3">
+
+        <div className="space-y-4 mt-4">
           {conversation.map((msg, index) => (
-            <div key={index} className={`flex flex-col ${msg.type === 'user' ? 'items-end' : 'items-start'}`}>
-              <div className="mb-1 text-xs text-gray-500">
-              {msg.type === 'bot' ? 'Bot' : 
-               msg.type === 'ai' ? 'AI' : 
-               msg.type === 'user' ? 'You' : 'System'}
-            </div>
-            <div className={`p-3 rounded-lg max-w-[80%] ${
-              msg.type === 'bot' ? 'bg-gray-100' : 
-              msg.type === 'ai' ? 'bg-purple-100' :
-              msg.type === 'user' ? 'bg-blue-100' : 
-              'bg-gray-200'
-            }`}>
-                {msg.content}
-                
+            <div
+              key={index}
+              className={`flex flex-col animate-slide-up ${
+                msg.type === 'user' ? 'items-end' : 'items-start'
+              }`}
+            >
+              <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">
+                {msg.type === 'bot' ? 'Bot' : 
+                 msg.type === 'ai' ? 'AI' : 
+                 msg.type === 'user' ? 'You' : 'System'}
+              </div>
+              <div
+                className={`p-4 rounded-2xl max-w-[80%] shadow-sm transition-all duration-200 ${
+                  msg.type === 'bot' ? 'bg-gray-100 dark:bg-gray-700' : 
+                  msg.type === 'ai' ? 'bg-purple-100 dark:bg-purple-900' :
+                  msg.type === 'user' ? 'bg-blue-500 text-white' : 
+                  'bg-gray-200 dark:bg-gray-600'
+                }`}
+              >
+                <div className="text-sm">{msg.content}</div>
+
                 {msg.options && msg.type === 'bot' && (
-                  <div className="mt-2 space-y-1">
+                  <div className="mt-3 space-y-2">
                     {msg.options.map((opt, i) => (
                       <button
                         key={i}
                         onClick={() => handleOptionSelect(msg.nodeId, opt, i)}
-                        className="block w-full text-left text-sm p-2 hover:bg-gray-200 rounded cursor-pointer border border-gray-300"
+                        className="block w-full text-left text-sm p-3 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors duration-150"
                       >
                         {opt}
                       </button>
                     ))}
                   </div>
                 )}
-                    {msg.inputConfig && msg.type === 'bot' && (
-                  <form 
+
+                {(msg.inputConfig && msg.type === 'bot') && (
+                  <form
                     onSubmit={(e) => {
                       e.preventDefault();
-                      handleSingleInputSubmit(msg.nodeId, inputValues[msg.nodeId] || '');
+                      if (msg.nodeType === 'aiinput') {
+                        handleAiSubmit(msg.nodeId, inputValues[msg.nodeId] || '');
+                      } else {
+                        handleSingleInputSubmit(msg.nodeId, inputValues[msg.nodeId] || '');
+                      }
                     }}
-                    className="mt-2 flex"
+                    className="mt-3 flex gap-2"
                   >
                     <input
                       type="text"
@@ -290,26 +286,32 @@ setAiResponses({});
                         [msg.nodeId]: e.target.value
                       }))}
                       placeholder={msg.inputConfig.placeholder}
-                      className="flex-1 p-2 w-40 border border-gray-300 rounded-l-lg focus:outline-none focus:ring-1 focus:ring-blue-500"
+                      className="flex-1 p-3 text-sm bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-l-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 transition-all duration-150"
                     />
                     <button
                       type="submit"
-                      className="p-2 bg-blue-500 text-white rounded-r-lg hover:bg-blue-600 transition-colors flex items-center"
+                      className={`p-3 rounded-r-lg transition-colors duration-150 ${
+                        msg.nodeType === 'aiinput'
+                          ? 'bg-green-500 hover:bg-green-600'
+                          : 'bg-blue-500 hover:bg-blue-600'
+                      } text-white flex items-center justify-center`}
                     >
-                      <FiSend className="mr-1" /> 
+                      <FiSend size={16} />
                     </button>
                   </form>
                 )}
-                
+
                 {msg.fields && msg.type === 'bot' && (
-                  <div className="mt-2 space-y-2">
+                  <div className="mt-3 space-y-3">
                     {msg.fields.map((field, i) => (
                       <div key={i} className="text-sm">
-                        <label className="block text-gray-700 mb-1">{field.label}</label>
+                        <label className="block text-gray-700 dark:text-gray-300 mb-1 font-medium">
+                          {field.label}
+                        </label>
                         <input
                           type={field.type || 'text'}
                           placeholder={field.label}
-                          className="w-full p-2 border border-gray-300 rounded"
+                          className="w-full p-3 text-sm bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 transition-all duration-150"
                           required={field.required}
                           onChange={(e) => {
                             const data = { ...formData[msg.nodeId], [field.key]: e.target.value };
@@ -320,50 +322,21 @@ setAiResponses({});
                     ))}
                     <button
                       onClick={() => handleFormSubmit(msg.nodeId, formData[msg.nodeId])}
-                      className="mt-2 px-3 py-1 bg-blue-500 text-white rounded text-sm"
+                      className="mt-3 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors duration-150 text-sm"
                     >
                       Submit
                     </button>
                   </div>
                 )}
- {msg.nodeType === 'aiinput' && msg.type === 'bot' && (
-                <form 
-                  onSubmit={(e) => {
-                    e.preventDefault();
-                    handleAiSubmit(msg.nodeId, inputValues[msg.nodeId] || '');
-                  }}
-                  className="mt-2 flex"
-                >
-                  <input
-                    type="text"
-                    value={inputValues[msg.nodeId] || ''}
-                    onChange={(e) => setInputValues(prev => ({
-                      ...prev,
-                      [msg.nodeId]: e.target.value
-                    }))}
-                    placeholder="Type your message.."
-                    className="flex-1 p-2 w-40 border border-gray-300 rounded-l-lg focus:outline-none focus:ring-1 focus:ring-blue-500"
-                    />
-                  <button
-                    type="submit"
-                    className="p-2 bg-green-500 text-white rounded-r-lg hover:bg-green-600 transition-colors"
-                  >
-                    <FiSend />
-                  </button>
-                </form>
-              )}
 
-              {/* Show AI response if available */}
-              {msg.type === 'ai' && aiResponses[msg.nodeId] && (
-                <div className="mt-2 p-2 bg-gray-50 rounded text-sm">
-                  <div className="font-medium text-xs text-gray-500 mb-1">AI Response:</div>
-                  <div>{aiResponses[msg.nodeId]}</div>
-                </div>
-              )}
-      
-
-
-            
+                {msg.type === 'ai' && aiResponses[msg.nodeId] && (
+                  <div className="mt-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg text-sm">
+                    <div className="font-medium text-xs text-gray-500 dark:text-gray-400 mb-1">
+                      AI Response:
+                    </div>
+                    <div>{aiResponses[msg.nodeId]}</div>
+                  </div>
+                )}
               </div>
             </div>
           ))}

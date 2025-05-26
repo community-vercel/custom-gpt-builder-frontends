@@ -1,39 +1,40 @@
-"use client";
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import Link from "next/link";
-import { FaUser, FaEnvelope, FaLock } from "react-icons/fa";
+// app/signup/page.js
+'use client';
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { FaUser, FaEnvelope, FaLock } from 'react-icons/fa';
 
 export default function SignupPage() {
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
- const handleSignup = async () => {
-  setIsLoading(true);
-  try {
-    const res = await fetch("http://localhost:5000/api/auth/register", { // Changed /signup to /register
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, email, password }),
-    });
+  const handleSignup = async () => {
+    setIsLoading(true);
+    try {
+      const res = await fetch('http://localhost:5000/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email, password }),
+      });
 
-    const data = await res.json();
-    if (res.ok) {
-      alert("Signup successful! Please login.");
-      router.push("/login");
-    } else {
-      alert(data.message || "Signup failed"); // Use data.message for better error reporting
+      const data = await res.json();
+      if (res.ok) {
+        alert('Account created! Please check your email to verify your account.');
+        router.push('/login');
+      } else {
+        alert(data.message || 'Signup failed');
+      }
+    } catch (error) {
+      console.error('Signup error:', error);
+      alert('An error occurred during signup: ' + error.message);
+    } finally {
+      setIsLoading(false);
     }
-  } catch (error) {
-    console.error("Signup error:", error);
-    alert("An error occurred during signup: " + error.message);
-  } finally {
-    setIsLoading(false);
-  }
-};
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-blue-100 px-4">
@@ -78,13 +79,13 @@ export default function SignupPage() {
             {isLoading ? (
               <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-white"></div>
             ) : (
-              "Sign Up"
+              'Sign Up'
             )}
           </button>
         </div>
 
         <p className="text-center text-gray-600 mt-6">
-          Already have an account?{" "}
+          Already have an account?{' '}
           <Link href="/login" className="text-blue-600 font-medium hover:underline">
             Login
           </Link>

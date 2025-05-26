@@ -182,20 +182,19 @@ export default function PackagesPage() {
             <p className="font-medium">{error}</p>
           </motion.div>
         )}
-   <iframe
-      src="http://localhost:5000/api/chatbot/682c7e24b707fc071614dfbe/118348517020939070586"
-      style={{
-        width: '400px',
-        height: '600px',
-        border: 'none',
-        position: 'fixed',
-        bottom: '20px',
-        right: '20px',
-      }}
-      allowTransparency="true"
-      title="Chatbot"
-    >
-      </iframe>
+ <iframe
+  src="http://localhost:5000/api/chatbot/683341ac5a51f1ac4cbb4318/683307347fb0b329f0322ea5?domain=https%3A%2F%2Fanisdev.vercel.app"
+  style={{
+    width: '400px',
+    height: '600px',
+    border: 'none',
+    position: 'fixed',
+    bottom: '20px',
+    right: '20px'
+  }}
+  allowTransparency="true"
+/>
+
         {/* Packages Grid */}
         <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3 max-w-6xl mx-auto">
           {packages.map((pkg, index) => (

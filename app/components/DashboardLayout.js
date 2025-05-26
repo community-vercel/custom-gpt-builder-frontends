@@ -29,6 +29,7 @@ import { AppProviders } from '../providers';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useDispatch } from 'react-redux';
 import { clearCredentials } from '../../store/authSlice';
+import LoginPage from '../login/page';
 export default function DashboardLayout({ children }) {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
@@ -39,10 +40,11 @@ export default function DashboardLayout({ children }) {
    const dispatch = useDispatch();
 
   const { data: session, status } = useSession();
+  
   const pathname = usePathname();
   const isLoginPage = pathname === "/login";
 const isChatbotPage = pathname===('/chatbot') 
-
+const isSignuupPage = pathname === "/signup";
 
 
 // Check if the current page is a chatbot page
@@ -68,7 +70,7 @@ const isChatbotPage = pathname===('/chatbot')
   }, []);
 
   if (isLoginPage || 
-    isChatbotPage ) {
+    isChatbotPage || isSignuupPage ) {
     return <AppProviders>{children}</AppProviders>;
   }
  
@@ -96,6 +98,13 @@ const isChatbotPage = pathname===('/chatbot')
     
     await signOut({ callbackUrl: "/login" });
   };
+    if (status === "loading") {
+      return <div>Loading...</div>;
+    }
+  
+    if (!session?.user?.name) {
+      return <LoginPage />;
+    }
 
   return (
     <div className="flex h-screen bg-gradient-to-br from-gray-50 to-gray-100 overflow-hidden">

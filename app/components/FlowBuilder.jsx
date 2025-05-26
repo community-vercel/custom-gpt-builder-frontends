@@ -11,7 +11,7 @@ import SingleInputFormNode from './SingleInputNode';
 import SingleInputApi from './SingleAPi';
 import 'reactflow/dist/style.css';
 import { useDispatch, useSelector } from 'react-redux';
-import { setNodes as setStoreNodes, updateNode, addNode, clearFlow,setWebsiteDomain, // Make sure this is included in the exports
+import {  setNodes as setStoreNodes, updateNode, addNode, clearFlow,setWebsiteDomain, // Make sure this is included in the exports
  } from '../../store/flowBuilderSlice';
 import { applyNodeChanges } from 'reactflow';
 import { useReactFlow } from 'reactflow';
@@ -168,7 +168,15 @@ console.log('FlowBuilder mounted with flowId:', flowState.currentFlowId); // Deb
   }, [nodes, edges]);
 const handleSaveFlows = async () => {
   if (!session?.user?.id) {
-    toast.error('User not authenticated', { /* ... */ });
+    toast.error('User not authenticated', {
+      style: {
+        background: customTheme.backgroundColor || '#f8f9fa',
+        color: customTheme.textColor || '#212529',
+        border: `1px solid ${customTheme.primaryColor || '#007bff'}`,
+        borderRadius: '8px',
+        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+      },
+    });
     return;
   }
 
@@ -189,7 +197,6 @@ const handleSaveFlows = async () => {
   setNameError('');
   setDomainError('');
 
-
   try {
     let result;
     if (flowState.currentFlowId || flowId) {
@@ -209,12 +216,11 @@ const handleSaveFlows = async () => {
           userId: session.user.id,
           nodes,
           edges,
-          flowName: flowName ,
+          flowName,
           websiteDomain,
         })
       ).unwrap();
     }
-    
 
     toast.success('Flow saved successfully!', {
       style: {
@@ -225,22 +231,31 @@ const handleSaveFlows = async () => {
         boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
       },
     });
-      dispatch(setFlowName(flowName));
 
-  if (typeof setWebsiteDomain === 'function') {
+    dispatch(setFlowName(flowName));
+
+    if (typeof setWebsiteDomain === 'function') {
       dispatch(setWebsiteDomain(websiteDomain));
-
     } else {
       console.error('setWebsiteDomain is not a function:', setWebsiteDomain);
     }
 
-    
-    // Debug embed modal conditions
-
-    // Open embed modal if conditions are met
-  
   } catch (error) {
-    toast.error('Failed to save flow: ' + (error.message || 'Unknown error'), { /* ... */ });
+    // Extract the error message from the API response
+    const errorMessage =
+      error?.response?.data?.message || // API-specific error message
+      error.message || // Generic error message from Redux Toolkit
+      'Unknown error occurred while saving flow';
+
+    toast.error(`Failed to save flow: ${error}`, {
+      style: {
+        background: customTheme.backgroundColor || '#f8f9fa',
+        color: customTheme.textColor || '#212529',
+        border: `1px solid ${customTheme.primaryColor || '#dc3545'}`,
+        borderRadius: '8px',
+        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+      },
+    });
   }
 };
 
