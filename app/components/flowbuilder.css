@@ -1,0 +1,252 @@
+/* flowbuilder.css */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap');
+
+/* Animations */
+
+
+@keyframes slide-up {
+ from {
+ opacity: 0;
+ transform: translateY(12px);
+ }
+ to {
+ opacity: 1;
+ transform: translateY(0);
+ }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes slide-down {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes glow-pulse {
+ 0% {
+ filter: drop-shadow(0 0 5px var(--glow));
+ }
+ 50% {
+ filter: drop-shadow(0 0 20px var(--glow));
+ }
+ 100% {
+ filter: drop-shadow(0 0 5px var(--glow));
+ }
+}
+
+@keyframes dash-flow {
+ to {
+ stroke-dashoffset: -25;
+ }
+}
+
+@keyframes bounce {
+ 0%, 100% { transform: translateY(0); }
+ 50% { transform: translateY(-4px); }
+}
+
+/* Base styles */
+html, body {
+ font-family: 'Poppins', sans-serif;
+ margin: 0;
+ padding: 0;
+ overflow: hidden;
+ background: var(--background);
+ color: var(--text);
+}
+
+/* Node styles */
+.react-flow__node {
+ border-radius: 16px;
+ box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15), 0 2px 6px rgba(0, 0, 0, 0.1);
+ transition: transform 0.3s ease, box-shadow 0.3s ease, border 0.3s ease;
+ border: 3px solid transparent;
+ background: var(--card);
+ backdrop-filter: blur(8px);
+ padding: 20px;
+ min-width: 200px;
+}
+
+.react-flow__node:hover {
+ transform: translateY(-4px) scale(1.05);
+ box-shadow: 0 12px 32px var(--glow), 0 4px 12px rgba(0, 0, 0, 0.2);
+ border: 3px solid var(--primary);
+ animation: glow-pulse 1.5s infinite;
+}
+
+/* Custom node styles */
+.custom-node {
+ background: linear-gradient(145deg, var(--card) 0%, var(--accent) 50%);
+ border: 2px solid var(--border);
+ border-radius: 16px;
+ padding: 16px;
+ color: var(--text);
+ font-size: 16px;
+ font-weight: 600;
+ transition: all 0.3s ease;
+}
+
+.custom-node:hover {
+ border-color: var(--primary);
+ box-shadow: 0 0 16px var(--glow);
+}
+
+.custom-node div, .custom-node span, .custom-node p {
+ color: var(--text) !important;
+ font-size: 15px;
+ line-height: 1.6;
+ margin: 0;
+}
+
+.custom-node input, .custom-node textarea {
+ width: 100%;
+ padding: 10px;
+ border: 2px solid var(--border);
+ border-radius: 8px;
+ background: var(--background);
+ color: var(--text);
+ font-size: 14px;
+ transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.custom-node input:focus, .custom-node textarea:focus {
+ border-color: var(--primary);
+ box-shadow: 0 0 12px var(--glow);
+ outline: none;
+}
+
+.custom-node button {
+ padding: 10px 20px;
+ border: none;
+ border-radius: 8px;
+ background: linear-gradient(90deg, var(--primary) 0%, var(--secondary) 100%);
+ /* color: white; */
+ font-size: 14px;
+ font-weight: 600;
+ cursor: pointer;
+ transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.custom-node button:hover {
+ transform: translateY(-3px);
+ box-shadow: 0 6px 16px var(--glow);
+}
+
+/* Node type-specific styles */
+.react-flow__node-text { background: linear-gradient(135deg, var(--primary) 0%, var(--success) 100%);  }
+.react-flow__node-custom { background: linear-gradient(135deg, var(--secondary) 0%, var(--primary) 100%);  }
+.react-flow__node-webhook { background: linear-gradient(135deg, var(--success) 0%, var(--primary) 100%); ; }
+.react-flow__node-form { background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%); color: var(--text); }
+.react-flow__node-condition { background: linear-gradient(135deg, yellow 0%, orange 100%); color: var(--text); }
+.react-flow__node-aiinput { background: linear-gradient(135deg, blue 0%, green 100%);  }
+
+/* Edge styles */
+.react-flow__edge-path {
+ stroke-width: 5px; /* Thicker edges */
+ stroke-linecap: round;
+ filter: drop-shadow(0 3px 8px rgba(0, 0, 0, 0.3));
+ transition: stroke-width 0.3s ease, filter 0.3s ease;
+ stroke-dasharray: 12 6;
+ animation: dash-flow 1.5s linear infinite;
+}
+
+.react-flow__edge:hover .react-flow__edge-path {
+ stroke-width: 6px;
+ filter: drop-shadow(0 0 16px var(--glow));
+ animation: glow-pulse 1.2s infinite;
+}
+
+/* Edge label styles */
+.react-flow__edge-text {
+ font-size: 16px; /* Larger labels */
+ font-weight: 700;
+ fill: var(--text);
+ background: linear-gradient(90deg, var(--primary) 0%, var(--secondary) 100%);
+ padding: 6px 12px;
+ border-radius: 8px;
+ border: 2px solid var(--border);
+ box-shadow: 0 4px 12px var(--glow);
+ transition: transform 0.3s ease, box-shadow 0.3s ease;
+ /* -webkit-text-fill-color: white; */
+}
+
+.react-flow__edge:hover .react-flow__edge-text {
+ transform: scale(1.15);
+ box-shadow: 0 6px 20px var(--glow);
+}
+
+/* Edge type-specific styles */
+.react-flow__edge-yes .react-flow__edge-path { stroke: var(--success); }
+.react-flow__edge-no .react-flow__edge-path { stroke: var(--danger); }
+.react-flow__edge-option .react-flow__edge-path { stroke: var(--primary); }
+
+/* Connection handle styles (edge dots) */
+.react-flow__handle {
+ width: 12px; /* Larger handles */
+ height: 12px;
+ background: var(--primary);
+ border: 2px solid var(--card);
+ border-radius: 50%;
+ transition: transform 0.3s ease, background 0.3s ease;
+}
+
+.react-flow__handle:hover {
+ transform: scale(1.5);
+ background: var(--secondary);
+ box-shadow: 0 0 12px var(--glow);
+}
+
+.react-flow__handle.source { background: var(--success); }
+.react-flow__handle.target { background: var(--danger); }
+
+/* Background dots */
+.react-flow__background {
+ opacity: 0.5; /* More visible */
+}
+
+.react-flow__background .react-flow__background-dot {
+ fill: var(--primary); /* Vibrant color */
+ r: 3; /* Larger dots */
+ transition: fill 0.3s ease;
+}
+
+/* Sidebar node cards */
+aside .group {
+ background: var(--card);
+ border: 2px solid var(--border);
+ border-radius: 12px;
+ transition: transform 0.3s ease, box-shadow 0.3s ease;
+ box-shadow: 0 4px 16px var(--glow);
+}
+
+aside .group:hover {
+ transform: translateY(-4px) scale(1.05);
+ box-shadow: 0 8px 24px var(--glow);
+ border-color: var(--primary);
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+ .react-flow__edge-path { stroke-width: 4px; }
+ .react-flow__edge-text { font-size: 14px; padding: 4px 8px; }
+ .react-flow__handle { width: 10px; height: 10px; }
+ .react-flow__background .react-flow__background-dot { r: 2; }
+ aside { width: 70vw; }
+}
+
+/* Accessibility */
+button, input, textarea {
+ outline: none;
+}
+
+button:focus, input:focus, textarea:focus {
+ outline: 3px solid var(--primary);
+ outline-offset: 2px;
+}
+
+/* Glassmorphism */
+.backdrop-blur-md {
+ backdrop-filter: blur(10px);
+}

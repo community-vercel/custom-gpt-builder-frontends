@@ -1,33 +1,42 @@
 "use client";
 import { useSession } from "next-auth/react";
-import { redirect } from "next/navigation";
 import { useEffect, useState } from "react";
 import { 
   FaUser, 
-  FaEnvelope, 
   FaRobot, 
   FaListAlt, 
   FaMoneyBillWave,
   FaChartLine,
   FaCog,
-  FaBell,
-  FaSearch
+
 } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
-import LogoutButton from "../components/Logout";
 import Link from "next/link";
-
+import axios from "axios";
 export default function DashboardPage() {
   const { data: session, status } = useSession({
    
   });
+    const [userSubscription, setUserSubscription] = useState(null);
 
+ const fetchSubscription = async () => {
+    try {
+      const { data } = await axios.get(`http://localhost:5000/api/package/getpackage?userId=${session.user?.id}`);
+        setUserSubscription(data.userPackage || null);
+    } catch (err) {
+      console.error('Failed to fetch subscription:', err);
+      setUserSubscription(null);
+    }
+  };
+  
   const [activeTab, setActiveTab] = useState('overview');
   const [isScrolled, setIsScrolled] = useState(false);
 
   useEffect(() => {
     document.title = "Analytics Dashboard";
-    
+     if (session.user?.id) {
+      fetchSubscription();
+    }
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 0);
     };
@@ -108,7 +117,7 @@ export default function DashboardPage() {
                   <FaUser className="text-blue-500" /> Profile Overview
                 </h2>
                 <span className="px-3 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full">
-                  Basic Plan
+                  {userSubscription ? userSubscription.name : 'No Active Package'}
                 </span>
               </div>
               <div className="space-y-5 text-gray-700">
@@ -173,15 +182,15 @@ export default function DashboardPage() {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   <div className="bg-blue-50 p-4 rounded-2xl">
                     <p className="text-sm text-blue-600">Total Flows</p>
-                    <p className="text-3xl font-bold text-blue-800">12</p>
+                    <p className="text-3xl font-bold text-blue-800">0</p>
                   </div>
                   <div className="bg-green-50 p-4 rounded-2xl">
                     <p className="text-sm text-green-600">Active Flows</p>
-                    <p className="text-3xl font-bold text-green-800">8</p>
+                    <p className="text-3xl font-bold text-green-800">0</p>
                   </div>
                   <div className="bg-purple-50 p-4 rounded-2xl">
                     <p className="text-sm text-purple-600">Messages Sent</p>
-                    <p className="text-3xl font-bold text-purple-800">1,243</p>
+                    <p className="text-3xl font-bold text-purple-800">0</p>
                   </div>
                 </div>
               </motion.div>

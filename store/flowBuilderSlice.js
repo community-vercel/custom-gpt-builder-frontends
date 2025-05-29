@@ -132,19 +132,24 @@ const flowBuilderSlice = createSlice({
     setEdges: (state, action) => {
       state.edges = action.payload;
     },
-    updateNode: (state, action) => {
-      const { id, data } = action.payload;
-      const nodeIndex = state.nodes.findIndex(node => node.id === id);
-      if (nodeIndex >= 0) {
-        state.nodes[nodeIndex] = {
-          ...state.nodes[nodeIndex],
-          data: {
-            ...state.nodes[nodeIndex].data,
-            ...data
-          }
-        };
-      }
-    },
+updateNode: (state, action) => {
+  const { id, data, position } = action.payload;
+  console.log('updateNode reducer called:', { id, data, position });
+  const nodeIndex = state.nodes.findIndex((node) => node.id === id);
+  if (nodeIndex >= 0) {
+    state.nodes[nodeIndex] = {
+      ...state.nodes[nodeIndex],
+      data: {
+        ...state.nodes[nodeIndex].data,
+        ...data,
+      },
+      ...(position && { position }),
+    };
+    console.log(`Node ${id} updated in state:`, state.nodes[nodeIndex]);
+  } else {
+    console.error(`Node with id ${id} not found in state`, state.nodes);
+  }
+},
     addNode: (state, action) => {
       state.nodes.push(action.payload);
     },
@@ -154,6 +159,9 @@ const flowBuilderSlice = createSlice({
       state.currentFlowId = null;
       state.status = 'idle';
       state.error = null;
+    },
+        setFlowName: (state, action) => {
+      state.flowName = action.payload;
     },
     setCurrentFlow: (state, action) => {
       state.currentFlowId = action.payload;
@@ -270,7 +278,7 @@ export const {
   clearFlow,
   setCurrentFlow,
   resetFlowState,
-  
+setFlowName,
   setWebsiteDomain
 } = flowBuilderSlice.actions;
 

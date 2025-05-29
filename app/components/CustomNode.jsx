@@ -1,25 +1,29 @@
+import React from 'react';
 import { Handle, Position } from 'reactflow';
-import { useDispatch } from 'react-redux';
-import { updateNode } from '../../store/flowBuilderSlice';
 
 export default function CustomNode({ id, data }) {
-  const dispatch = useDispatch();
-
   const onChangeLabel = (val) => {
-    dispatch(updateNode({ id, data: { ...data, label: val } }));
+    if (data.onChange) {
+      console.log('CustomNode label changed:', val);
+      data.onChange(val);
+    }
   };
 
   const onAddOption = () => {
-    dispatch(updateNode({
-      id,
-      data: { ...data, options: [...data.options, `Option ${data.options.length + 1}`] }
-    }));
+    const newOptions = [...data.options, `Option ${data.options.length + 1}`];
+    if (data.onFieldsChange) {
+      console.log('CustomNode adding option:', newOptions);
+      data.onFieldsChange(newOptions);
+    }
   };
 
   const onChangeOption = (index, val) => {
     const newOptions = [...data.options];
     newOptions[index] = val;
-    dispatch(updateNode({ id, data: { ...data, options: newOptions } }));
+    if (data.onFieldsChange) {
+      console.log('CustomNode option changed:', newOptions);
+      data.onFieldsChange(newOptions);
+    }
   };
 
   return (
@@ -27,7 +31,7 @@ export default function CustomNode({ id, data }) {
       <Handle type="target" position={Position.Top} />
 
       <input
-        value={data.label}
+        value={data.label || ''}
         onChange={(e) => onChangeLabel(e.target.value)}
         className="w-full mb-2 border p-1 text-sm rounded"
         placeholder="Label"
@@ -40,8 +44,6 @@ export default function CustomNode({ id, data }) {
             onChange={(e) => onChangeOption(i, e.target.value)}
             className="w-full border p-1 text-sm rounded"
           />
-
-          {/* Unique Handle for each option */}
           <Handle
             type="source"
             position={Position.Right}
@@ -50,7 +52,7 @@ export default function CustomNode({ id, data }) {
               top: '50%',
               transform: `translateY(-50%)`,
               right: '-8px',
-              background: '#555'
+              background: '#555',
             }}
           />
         </div>

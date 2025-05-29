@@ -1,22 +1,18 @@
-
 import React, { useState } from 'react';
 import { Handle, Position } from 'reactflow';
 import { FiPlus, FiTrash2 } from 'react-icons/fi';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 
 export default function FormNode({ id, data, selected }) {
-  const dispatch = useDispatch();
-    const smtp = useSelector(state => state.smtp.config);
-
-  const [formData, setFormData] = useState({});
+  const smtp = useSelector((state) => state.smtp.config);
+  const [formData, setFormData] = useState({}); // For form submission
   const [submitted, setSubmitted] = useState(false);
-  const [fields, setFields] = useState(data.fields || []);
   const [newField, setNewField] = useState({
     label: '',
     key: '',
     type: 'text',
     required: false,
-    options: []
+    options: [],
   });
   const [newOption, setNewOption] = useState('');
 
@@ -24,14 +20,18 @@ export default function FormNode({ id, data, selected }) {
     e.preventDefault();
     setSubmitted(true);
     if (data.onSubmit) {
+      console.log('FormNode submitting:', formData);
       data.onSubmit(formData);
     }
   };
 
   const addField = () => {
     if (newField.label && newField.key) {
-      const updated = [...fields, { ...newField }];
-      setFields(updated);
+      const updatedFields = [...(data.fields || []), { ...newField }];
+      if (data.onFieldsChange) {
+        console.log('FormNode adding field:', updatedFields);
+        data.onFieldsChange(updatedFields);
+      }
       setNewField({
         label: '',
         key: '',
@@ -39,19 +39,16 @@ export default function FormNode({ id, data, selected }) {
         required: false,
         options: [],
       });
-  
-      if (data.onFieldsChange) {
-        data.onFieldsChange(updated); // <-- sync with parent/store
-      }
+      setNewOption('');
     }
   };
+
   const removeField = (index) => {
-    const updatedFields = [...fields];
+    const updatedFields = [...(data.fields || [])];
     updatedFields.splice(index, 1);
-    setFields(updatedFields);
-  
     if (data.onFieldsChange) {
-      data.onFieldsChange(updatedFields); // <-- sync
+      console.log('FormNode removing field:', updatedFields);
+      data.onFieldsChange(updatedFields);
     }
   };
 
@@ -59,7 +56,7 @@ export default function FormNode({ id, data, selected }) {
     if (newOption) {
       setNewField({
         ...newField,
-        options: [...newField.options, newOption]
+        options: [...newField.options, newOption],
       });
       setNewOption('');
     }
@@ -70,7 +67,7 @@ export default function FormNode({ id, data, selected }) {
     updatedOptions.splice(index, 1);
     setNewField({
       ...newField,
-      options: updatedOptions
+      options: updatedOptions,
     });
   };
 
@@ -79,14 +76,13 @@ export default function FormNode({ id, data, selected }) {
       <Handle type="target" position={Position.Top} />
       <Handle type="source" position={Position.Bottom} />
 
-
       {submitted ? (
         <div className="text-green-600 text-sm">Submitted successfully!</div>
       ) : (
         <>
           <form onSubmit={handleSubmit} className="mb-4">
-            {fields.map((field, index) => (
-              <div key={index} className="mb-3 p-2 border border-gray-200 rounded">
+            {(data.fields || []).map((field, index) => (
+              <div key={field.key || index} className="mb-3 p-2 border border-gray-200 rounded">
                 <div className="flex justify-between items-center mb-1">
                   <label className="block text-xs text-gray-600">{field.label}</label>
                   {data.onFieldsChange && (
@@ -99,7 +95,7 @@ export default function FormNode({ id, data, selected }) {
                     </button>
                   )}
                 </div>
-                
+
                 {field.type === 'select' ? (
                   <select
                     name={field.key}
@@ -111,7 +107,7 @@ export default function FormNode({ id, data, selected }) {
                     className="w-full p-2 border border-gray-300 rounded text-xs"
                   >
                     <option value="">Select an option</option>
-                    {field.options.map((option, i) => (
+                    {(field.options || []).map((option, i) => (
                       <option key={i} value={option}>
                         {option}
                       </option>
@@ -132,7 +128,7 @@ export default function FormNode({ id, data, selected }) {
               </div>
             ))}
 
-            {fields.length > 0 && (
+            {data.fields?.length > 0 && (
               <button
                 type="submit"
                 className="mt-2 w-full bg-blue-600 text-white text-xs p-2 rounded hover:bg-blue-700"
@@ -144,117 +140,113 @@ export default function FormNode({ id, data, selected }) {
 
           {data.onFieldsChange && (
             <>
-            <div className="border-t pt-3">
-      <h5 className="text-xs font-semibold mb-2">Email Settings</h5>
-      <div className="space-y-2">
-        <input
-          type="email"
-          placeholder="To Email"
-          value={formData.toEmail || ''}
-          onChange={(e) => setFormData((prev) => ({ ...prev, toEmail: e.target.value }))}
-          className="w-full p-2 border border-gray-300 rounded text-xs"
-        />
-
-        <select
-          value={formData.smtp || ''}
-          onChange={(e) => setFormData((prev) => ({ ...prev, smtp: e.target.value }))}
-          className="w-full p-2 border border-gray-300 rounded text-xs"
-        >
-          <option value="">Select email from  SMTP</option>
-         {smtp?.username && <option value={smtp?.username}>{smtp?.username}</option>}
-         
-        </select>
-      </div>
-    </div>
-
-
-            <div className="border-t pt-3">
-              <h5 className="text-xs font-semibold mb-2">Add New Field</h5>
-              <div className="space-y-2">
-                <div className="flex gap-2">
+              <div className="border-t pt-3">
+                <h5 className="text-xs font-semibold mb-2">Email Settings</h5>
+                <div className="space-y-2">
                   <input
-                    type="text"
-                    placeholder="Label"
-                    value={newField.label}
-                    onChange={(e) => setNewField({ ...newField, label: e.target.value })}
-                    className="flex-1 p-2 border border-gray-300 rounded text-xs"
+                    type="email"
+                    placeholder="To Email"
+                    value={formData.toEmail || ''}
+                    onChange={(e) => setFormData((prev) => ({ ...prev, toEmail: e.target.value }))}
+                    className="w-full p-2 border border-gray-300 rounded text-xs"
                   />
-                  <input
-                    type="text"
-                    placeholder="Field Key"
-                    value={newField.key}
-                    onChange={(e) => setNewField({ ...newField, key: e.target.value })}
-                    className="flex-1 p-2 border border-gray-300 rounded text-xs"
-                  />
-                </div>
-                
-                <div className="flex gap-2">
                   <select
-                    value={newField.type}
-                    onChange={(e) => setNewField({ ...newField, type: e.target.value })}
-                    className="p-2 border border-gray-300 rounded text-xs"
+                    value={formData.smtp || ''}
+                    onChange={(e) => setFormData((prev) => ({ ...prev, smtp: e.target.value }))}
+                    className="w-full p-2 border border-gray-300 rounded text-xs"
                   >
-                    <option value="text">Text</option>
-                    <option value="email">Email</option>
-                    <option value="number">Number</option>
-                    <option value="select">Dropdown</option>
+                    <option value="">Select email from SMTP</option>
+                    {smtp?.username && <option value={smtp.username}>{smtp.username}</option>}
                   </select>
-                  
-                  <label className="flex items-center text-xs gap-1">
-                    <input
-                      type="checkbox"
-                      checked={newField.required}
-                      onChange={(e) => setNewField({ ...newField, required: e.target.checked })}
-                    />
-                    Required
-                  </label>
                 </div>
-
-                {newField.type === 'select' && (
-                  <div className="space-y-2">
-                    <div className="flex gap-2">
-                      <input
-                        type="text"
-                        placeholder="Add option"
-                        value={newOption}
-                        onChange={(e) => setNewOption(e.target.value)}
-                        className="flex-1 p-2 border border-gray-300 rounded text-xs"
-                      />
-                      <button
-                        type="button"
-                        onClick={addOption}
-                        className="bg-blue-500 text-white p-2 rounded text-xs"
-                      >
-                        <FiPlus size={12} />
-                      </button>
-                    </div>
-                    <div className="flex flex-wrap gap-1">
-                      {newField.options.map((option, index) => (
-                        <div key={index} className="flex items-center bg-gray-100 px-2 py-1 rounded text-xs">
-                          {option}
-                          <button
-                            type="button"
-                            onClick={() => removeOption(index)}
-                            className="ml-1 text-red-500"
-                          >
-                            <FiTrash2 size={10} />
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                <button
-                  type="button"
-                  onClick={addField}
-                  className="w-full bg-green-500 text-white text-xs p-2 rounded hover:bg-green-600 flex items-center justify-center gap-1"
-                >
-                  <FiPlus size={12} /> Add Field
-                </button>
               </div>
-            </div>
 
+              <div className="border-t pt-3">
+                <h5 className="text-xs font-semibold mb-2">Add New Field</h5>
+                <div className="space-y-2">
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      placeholder="Label"
+                      value={newField.label}
+                      onChange={(e) => setNewField({ ...newField, label: e.target.value })}
+                      className="flex-1 p-2 border border-gray-300 rounded text-xs"
+                    />
+                    <input
+                      type="text"
+                      placeholder="Field Key"
+                      value={newField.key}
+                      onChange={(e) => setNewField({ ...newField, key: e.target.value })}
+                      className="flex-1 p-2 border border-gray-300 rounded text-xs"
+                    />
+                  </div>
+
+                  <div className="flex gap-2">
+                    <select
+                      value={newField.type}
+                      onChange={(e) => setNewField({ ...newField, type: e.target.value })}
+                      className="p-2 border border-gray-300 rounded text-xs"
+                    >
+                      <option value="text">Text</option>
+                      <option value="email">Email</option>
+                      <option value="number">Number</option>
+                      <option value="select">Dropdown</option>
+                    </select>
+
+                    <label className="flex items-center text-xs gap-1">
+                      <input
+                        type="checkbox"
+                        checked={newField.required}
+                        onChange={(e) => setNewField({ ...newField, required: e.target.checked })}
+                      />
+                      Required
+                    </label>
+                  </div>
+
+                  {newField.type === 'select' && (
+                    <div className="space-y-2">
+                      <div className="flex gap-2">
+                        <input
+                          type="text"
+                          placeholder="Add option"
+                          value={newOption}
+                          onChange={(e) => setNewOption(e.target.value)}
+                          className="flex-1 p-2 border border-gray-300 rounded text-xs"
+                        />
+                        <button
+                          type="button"
+                          onClick={addOption}
+                          className="bg-blue-500 text-white p-2 rounded text-xs"
+                        >
+                          <FiPlus size={12} />
+                        </button>
+                      </div>
+                      <div className="flex flex-wrap gap-1">
+                        {newField.options.map((option, index) => (
+                          <div key={index} className="flex items-center bg-gray-100 px-2 py-1 rounded text-xs">
+                            {option}
+                            <button
+                              type="button"
+                              onClick={() => removeOption(index)}
+                              className="ml-1 text-red-500"
+                            >
+                              <FiTrash2 size={10} />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  <button
+                    type="button"
+                    onClick={addField}
+                    className="w-full bg-green-500 text-white text-xs p-2 rounded hover:bg-green-600 flex items-center justify-center gap-1"
+                  >
+                    <FiPlus size={12} /> Add Field
+                  </button>
+                </div>
+              </div>
             </>
           )}
         </>
